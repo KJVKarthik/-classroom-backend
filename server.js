@@ -13,13 +13,11 @@ app.get('/', (req, res) => {
 })
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'kjvkarthik#3010',
-    database: 'classroom_management',
-    authPlugins: {
-        mysql_native_password: () => () => Buffer.from('')
-    }
+    host: process.env.MYSQLHOST,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
+    port: process.env.MYSQLPORT
 })
 
 db.connect(err => {
