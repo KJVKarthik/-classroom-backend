@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classroom Management System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    :root { --dark: #0f172a; --muted: #64748b; --white: rgba(255,255,255,.82); --stroke: rgba(255,255,255,.92); --blue: #2563eb; --shadow: 0 24px 80px rgba(15,23,42,.12); }
+    body { min-height: 100vh; background: radial-gradient(circle at 12% 10%, rgba(37,99,235,.22), transparent 28%), radial-gradient(circle at 88% 18%, rgba(14,165,233,.22), transparent 30%), radial-gradient(circle at 50% 100%, rgba(168,85,247,.16), transparent 35%), linear-gradient(135deg,#eef2ff,#f8fafc,#e0f2fe); color: var(--dark); padding: 24px; overflow-x: hidden; transition: background .25s ease, color .25s ease; }
+    body.dark-mode { --dark: #f8fafc; --muted: #94a3b8; --white: rgba(15,23,42,.82); --stroke: rgba(148,163,184,.18); --shadow: 0 24px 80px rgba(0,0,0,.35); background: radial-gradient(circle at 12% 10%, rgba(37,99,235,.22), transparent 28%), radial-gradient(circle at 88% 18%, rgba(14,165,233,.16), transparent 30%), linear-gradient(135deg,#020617,#0f172a,#111827); color: var(--dark); }
+    body.dark-mode .subtitle, body.dark-mode .feature-card p, body.dark-mode .step p, body.dark-mode .table-title p { color: #cbd5e1; }
+    body.dark-mode .nav-links button { color: #cbd5e1; }
+    body.dark-mode .nav-links button:hover, body.dark-mode button:not(.active):not(.primary-btn):not(.export-btn) { background: rgba(148,163,184,.16); color: #f8fafc; }
+    body.dark-mode .eyebrow, body.dark-mode .feature-icon { background: rgba(37,99,235,.18); color: #bfdbfe; }
+    body.dark-mode .table-wrap, body.dark-mode .step { background: rgba(15,23,42,.7); border-color: rgba(148,163,184,.18); }
+    body.dark-mode th { background: rgba(30,41,59,.9); color: #cbd5e1; border-color: rgba(148,163,184,.18); }
+    body.dark-mode td { color: #e2e8f0; border-color: rgba(148,163,184,.14); }
+    body.dark-mode tr:hover td { background: rgba(30,41,59,.75); }
+    body.dark-mode .search-box { background: rgba(15,23,42,.8); color: #f8fafc; border-color: rgba(148,163,184,.28); }
+    .app { max-width: 1420px; margin: auto; position: relative; z-index: 2; }
+    .cursor-circle { position: fixed; width: 260px; height: 260px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(37,99,235,.18), rgba(14,165,233,.08), transparent 70%); transform: translate(-50%, -50%); filter: blur(2px); z-index: 1; transition: width .2s ease, height .2s ease; }
+    .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(8px); opacity: .7; animation: floatOrb 9s ease-in-out infinite alternate; }
+    .orb.one { width: 260px; height: 260px; background: rgba(37,99,235,.16); left: -70px; top: 22%; }
+    .orb.two { width: 320px; height: 320px; background: rgba(14,165,233,.15); right: -90px; top: 10%; animation-delay: 1.2s; }
+    .orb.three { width: 280px; height: 280px; background: rgba(168,85,247,.13); left: 42%; bottom: -110px; animation-delay: 2s; }
+    @keyframes floatOrb { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(26px,-34px,0) scale(1.08); } }
+    .navbar, .hero, .card, .panel, .feature-card, .timeline-card, .insight-card { background: var(--white); border: 1px solid var(--stroke); box-shadow: var(--shadow); backdrop-filter: blur(22px); }
+    .navbar { position: sticky; top: 14px; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 20px; margin-bottom: 24px; border-radius: 26px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 18px; letter-spacing: -.3px; }
+    .brand-icon { width: 44px; height: 44px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(135deg,#020617,#1e293b); color: white; box-shadow: 0 14px 34px rgba(15,23,42,.25); }
+    .nav-links, .tabs, .hero-actions, .nav-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .nav-links button { background: transparent; color: #334155; }
+    .nav-links button:hover { background: #e2e8f0; color: #020617; }
+    .hero { border-radius: 40px; padding: 78px; margin-bottom: 28px; min-height: 440px; display: grid; grid-template-columns: 1.35fr .75fr; align-items: center; gap: 34px; overflow: hidden; position: relative; }
+    .hero::after { content: ""; position: absolute; right: -120px; top: -120px; width: 430px; height: 430px; border-radius: 50%; background: radial-gradient(circle, rgba(37,99,235,.20), transparent 65%); }
+    .hero > div { position: relative; z-index: 2; }
+    .hero-visual { position: relative; z-index: 2; min-height: 300px; border-radius: 34px; background: linear-gradient(145deg, rgba(15,23,42,.96), rgba(30,41,59,.92)); padding: 28px; color: white; overflow: hidden; box-shadow: 0 34px 90px rgba(15,23,42,.28); }
+    .hero-visual::before { content: ""; position: absolute; inset: -70px; background: conic-gradient(from 180deg, rgba(37,99,235,.4), rgba(14,165,233,.2), rgba(168,85,247,.36), rgba(37,99,235,.4)); animation: spinGlow 10s linear infinite; opacity: .48; }
+    .hero-visual-content { position: relative; z-index: 2; }
+    .visual-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; color: #cbd5e1; font-size: 13px; font-weight: 800; }
+    .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 7px rgba(34,197,94,.14); display: inline-block; margin-right: 8px; }
+    .visual-number { font-size: 56px; font-weight: 950; letter-spacing: -2px; margin-bottom: 8px; }
+    .visual-label { color: #cbd5e1; font-weight: 750; line-height: 1.55; margin-bottom: 24px; }
+    .visual-bars { display: flex; gap: 9px; align-items: end; height: 90px; margin-top: 18px; }
+    .visual-bars span { flex: 1; border-radius: 999px 999px 12px 12px; background: linear-gradient(180deg,#60a5fa,#2563eb); animation: barRise 1.8s ease-in-out infinite alternate; }
+    .visual-bars span:nth-child(1) { height: 38%; }
+    .visual-bars span:nth-child(2) { height: 62%; animation-delay: .15s; }
+    .visual-bars span:nth-child(3) { height: 48%; animation-delay: .3s; }
+    .visual-bars span:nth-child(4) { height: 78%; animation-delay: .45s; }
+    .visual-bars span:nth-child(5) { height: 58%; animation-delay: .6s; }
+    .visual-bars span:nth-child(6) { height: 88%; animation-delay: .75s; }
+    @keyframes spinGlow { to { transform: rotate(360deg); } }
+    @keyframes barRise { to { transform: scaleY(.72); opacity: .75; } }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 13px; font-weight: 900; margin-bottom: 18px; }
+    h1 { font-size: clamp(44px, 6vw, 78px); line-height: 1.02; letter-spacing: -2.6px; margin-bottom: 20px; }
+    .subtitle { max-width: 940px; color: #475569; font-size: 21px; line-height: 1.75; }
+    .hero-actions { margin-top: 28px; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 28px 0; }
+    .card { border-radius: 30px; padding: 34px; min-height: 205px; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; position: relative; overflow: hidden; }
+    .card::after { content: ""; position: absolute; right: -40px; top: -40px; width: 110px; height: 110px; border-radius: 50%; background: rgba(37,99,235,.08); }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 30px 80px rgba(15,23,42,.15); border-color: rgba(37,99,235,.25); }
+    .card span { font-size: 32px; }
+    .card h3 { margin-top: 16px; font-size: 15px; color: var(--muted); font-weight: 800; }
+    .card p { font-size: 36px; font-weight: 950; margin-top: 6px; letter-spacing: -1px; }
+    .panel { border-radius: 32px; padding: 32px; scroll-margin-top: 110px; }
+    .table-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 18px; }
+    .table-title h2 { font-size: 28px; letter-spacing: -.8px; margin-bottom: 6px; }
+    .table-title p { color: #64748b; font-size: 14px; font-weight: 700; }
+    .toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+    button { border: none; padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 850; cursor: pointer; background: #e2e8f0; color: #0f172a; transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); }
+    button.active, .primary-btn { background: #0f172a; color: white; }
+    .table-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .add-btn { background: #16a34a; color: white; }
+    .add-btn:hover { background: #15803d; }
+    .export-btn { background: #2563eb; color: white; }
+    .export-btn:hover { background: #1d4ed8; }
+    .theme-toggle { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; background: #0f172a; color: white; font-size: 18px; }
+    body.dark-mode .theme-toggle { background: #f8fafc; color: #0f172a; }
+    .hero-btn-secondary { background: white; border: 1px solid #cbd5e1; color: #111827; }
+    .search-box { padding: 14px 18px; border: 1px solid #cbd5e1; border-radius: 999px; width: min(100%, 300px); outline: none; font-size: 14px; background: white; transition: border-color .2s ease, box-shadow .2s ease; }
+    .search-box:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
+    .table-wrap { width: 100%; overflow-x: auto; border-radius: 22px; border: 1px solid #e2e8f0; background: white; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th { background: #f8fafc; color: #475569; font-size: 12px; text-transform: uppercase; letter-spacing: .7px; text-align: left; padding: 16px; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 16px; border-bottom: 1px solid #eef2f7; color: #1f2937; font-size: 14px; font-weight: 520; }
+    tr:hover td { background: #f8fafc; }
+    tr:last-child td { border-bottom: none; }
+    .pill { display: inline-block; padding: 7px 11px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; font-weight: 900; text-transform: capitalize; }
+    .pill.present { background: #dcfce7; color: #166534; }
+    .pill.absent { background: #fee2e2; color: #991b1b; }
+    .pill.late { background: #fef3c7; color: #92400e; }
+    .loading, .empty { padding: 28px; text-align: center; color: #64748b; font-weight: 800; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 28px 0; }
+    .feature-card { border-radius: 28px; padding: 28px; min-height: 170px; transition: transform .25s ease, box-shadow .25s ease; position: relative; overflow: hidden; }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 30px 80px rgba(15,23,42,.15); }
+    .feature-card::before { content: ""; position: absolute; right: -55px; bottom: -55px; width: 150px; height: 150px; border-radius: 50%; background: rgba(99,102,241,.1); }
+    .feature-icon { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; background: #eef2ff; font-size: 24px; margin-bottom: 18px; }
+    .feature-card h3 { font-size: 19px; margin-bottom: 8px; letter-spacing: -.3px; }
+    .feature-card p { color: #64748b; line-height: 1.65; font-size: 15px; max-width: 330px; }
+    .timeline-card { border-radius: 32px; padding: 30px; margin-bottom: 28px; }
+    .timeline-title { font-size: 24px; margin-bottom: 20px; letter-spacing: -.7px; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .step { padding: 20px; border-radius: 22px; background: rgba(255,255,255,.65); border: 1px solid #e2e8f0; }
+    .step-number { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #0f172a; color: white; font-size: 13px; font-weight: 900; margin-bottom: 14px; }
+    .step h4 { font-size: 16px; margin-bottom: 6px; }
+    .step p { color: #64748b; font-size: 14px; line-height: 1.55; }
+    .insight-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin: 28px 0; }
+    .insight-card { border-radius: 32px; padding: 32px; position: relative; overflow: hidden; }
+    .insight-card h2 { font-size: 28px; letter-spacing: -.8px; margin-bottom: 12px; }
+    .insight-card p { color: #64748b; line-height: 1.7; font-weight: 650; }
+    .stack-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 22px; }
+    .stack-pill { padding: 15px 16px; border-radius: 18px; background: rgba(241,245,249,.88); font-weight: 900; color: #0f172a; border: 1px solid #e2e8f0; }
+    body.dark-mode .stack-pill { background: rgba(30,41,59,.8); color: #f8fafc; border-color: rgba(148,163,184,.18); }
+    .review-card { background: linear-gradient(145deg, rgba(15,23,42,.94), rgba(30,41,59,.9)); color: white; }
+    .review-card p { color: #cbd5e1; }
+    .score-ring { width: 132px; height: 132px; border-radius: 50%; background: conic-gradient(#22c55e 0 82%, rgba(255,255,255,.12) 82% 100%); display: grid; place-items: center; margin-bottom: 20px; box-shadow: inset 0 0 0 12px rgba(255,255,255,.08); }
+    .score-ring div { width: 92px; height: 92px; border-radius: 50%; background: #0f172a; display: grid; place-items: center; font-size: 28px; font-weight: 950; }
+    @media (max-width: 900px) { .hero { padding: 34px; border-radius: 26px; grid-template-columns: 1fr; } .cards, .feature-grid, .timeline, .insight-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 620px) { body { padding: 14px; } .navbar { align-items: flex-start; flex-direction: column; } .nav-links { width: 100%; } .hero { padding: 26px; min-height: auto; } .cards, .feature-grid, .timeline, .insight-grid, .stack-list { grid-template-columns: 1fr; } .toolbar { align-items: stretch; } .tabs, .search-box { width: 100%; } button { flex: 1; } }
+  </style>
+</head>
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
+  <div class="cursor-circle" id="cursorCircle"></div>
+  <main class="app">
+    <nav class="navbar">
+      <div class="brand"><div class="brand-icon">CM</div><span>Classroom Management</span></div>
+      <div class="nav-actions">
+        <div class="nav-links">
+          <button onclick="loadTable('students', document.querySelector('.tabs button:nth-child(1)'), true)">Students</button>
+          <button onclick="loadTable('lecturers', document.querySelector('.tabs button:nth-child(2)'), true)">Lecturers</button>
+          <button onclick="loadTable('lectures', document.querySelector('.tabs button:nth-child(3)'), true)">Lectures</button>
+          <button onclick="loadTable('attendance', document.querySelector('.tabs button:nth-child(4)'), true)">Attendance</button>
+        </div>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">● Live academic dashboard</div>
+        <h1>Classroom Management System</h1>
+        <p class="subtitle">A smart classroom dashboard that brings students, lecturers, lecture schedules, hostel details, and attendance records into one clean academic workspace.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" onclick="loadTable('students', document.querySelector('.tabs button:nth-child(1)'), true)">View Students</button>
+          <button class="hero-btn-secondary" onclick="loadTable('attendance', document.querySelector('.tabs button:nth-child(4)'), true)">Check Attendance</button>
+        </div>
+      </div>
+      <aside class="hero-visual">
+        <div class="hero-visual-content">
+          <div class="visual-top"><span><i class="pulse-dot"></i>Database Online</span><span>DBMS</span></div>
+          <div class="visual-number">22+</div>
+          <p class="visual-label">Records flowing through Students, Lecturers, Lectures, Attendance, and Hostel modules.</p>
+          <div class="visual-bars"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔎</div>
+        <h3>Instant Search</h3>
+        <p>Quickly filter records across students, lecturers, lectures, attendance, and hostel data during review.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧩</div>
+        <h3>Modular Sections</h3>
+        <p>Each database table is shown as a separate module, making the system easy to explain and demonstrate.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Live Counts</h3>
+        <p>The dashboard cards update based on backend API responses from the MySQL database.</p>
+      </div>
+    </section>
+
+    <section class="insight-grid">
+      <div class="insight-card">
+        <h2>Built like a real academic control center</h2>
+        <p>The interface combines live database records, quick navigation, search, export, dark mode, and smooth module switching so the project feels complete during demonstration.</p>
+        <div class="stack-list">
+          <div class="stack-pill">Node.js Backend</div>
+          <div class="stack-pill">Express API</div>
+          <div class="stack-pill">MySQL Database</div>
+          <div class="stack-pill">Responsive UI</div>
+        </div>
+      </div>
+      <div class="insight-card review-card">
+        <div class="score-ring"><div>82%</div></div>
+        <h2>Demo Ready</h2>
+        <p>Designed for smooth presentation flow with live counts, module tabs, searchable tables, CSV export, and clean glassmorphism visuals.</p>
+      </div>
+    </section>
+
+    <section class="timeline-card">
+      <h2 class="timeline-title">How the system works</h2>
+      <div class="timeline">
+        <div class="step"><div class="step-number">1</div><h4>Frontend</h4><p>User selects a section from the dashboard.</p></div>
+        <div class="step"><div class="step-number">2</div><h4>API Route</h4><p>Node.js receives the request through Express routes.</p></div>
+        <div class="step"><div class="step-number">3</div><h4>Database</h4><p>MySQL returns records from the selected table.</p></div>
+        <div class="step"><div class="step-number">4</div><h4>Display</h4><p>The result is shown instantly in a clean table layout.</p></div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card"><span>🎓</span><h3>Students</h3><p id="studentCount">0</p></div>
+      <div class="card"><span>👨‍🏫</span><h3>Lecturers</h3><p id="lecturerCount">0</p></div>
+      <div class="card"><span>📚</span><h3>Lectures</h3><p id="lectureCount">0</p></div>
+      <div class="card"><span>✅</span><h3>Attendance Records</h3><p id="attendanceCount">0</p></div>
+    </section>
+
+    <section class="panel" id="dataPanel">
+      <div class="table-header">
+        <div class="table-title">
+          <h2 id="sectionTitle">Students</h2>
+          <p id="recordCount">Showing 0 records</p>
+        </div>
+        <div class="table-actions">
+  <button class="add-btn" id="addButton" onclick="openAddModal()">+ Add Student</button>
+  <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+</div>
+      </div>
+      <div class="toolbar">
+        <div class="tabs">
+          <button class="active" onclick="loadTable('students', this, true)">Students</button>
+          <button onclick="loadTable('lecturers', this, true)">Lecturers</button>
+          <button onclick="loadTable('lectures', this, true)">Lectures</button>
+          <button onclick="loadTable('attendance', this, true)">Attendance</button>
+          <button onclick="loadTable('hostel', this, true)">Hostel</button>
+        </div>
+        <input class="search-box" id="search" type="text" placeholder="Search data..." oninput="renderTable()">
+      </div>
+      <div class="table-wrap"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+    </section>
+  </main>
+
+<div class="modal-backdrop" id="modalBackdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(14px);">
+  <div style="background:white;padding:28px;border-radius:24px;width:min(760px,100%);max-height:88vh;overflow-y:auto;box-shadow:0 40px 120px rgba(15,23,42,.35);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;">
+      <div>
+        <h2 id="modalTitle" style="font-size:28px;margin-bottom:6px;">Add Student</h2>
+        <p id="modalSubtitle" style="color:#64748b;font-weight:700;">Fill the details and save directly into MySQL.</p>
+      </div>
+      <button onclick="closeAddModal()" type="button" style="width:42px;height:42px;padding:0;display:grid;place-items:center;">✕</button>
+    </div>
+    <form id="addForm" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;"></form>
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:22px;flex-wrap:wrap;">
+      <button onclick="closeAddModal()" type="button">Cancel</button>
+      <button class="primary-btn" onclick="submitAddForm()" type="button">Add Record</button>
+    </div>
+  </div>
+</div>
+
+  <script>
+   const api = window.location.origin
+    const cursorCircle = document.getElementById('cursorCircle')
+    const themeToggle = document.getElementById('themeToggle')
+    document.addEventListener('mousemove', event => { cursorCircle.style.left = event.clientX + 'px'; cursorCircle.style.top = event.clientY + 'px' })
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙' }
+    let currentData = []
+    let currentColumns = []
+    let currentType = 'students'
+
+function openAddModal(){
+  const isStudent = currentType === 'students'
+  if (!(currentType === 'students' || currentType === 'lecturers')) return
+
+  const fields = isStudent
+    ? [
+        ['reg_no', 'Registration Number', 'text'],
+        ['f_name', 'First Name', 'text'],
+        ['l_name', 'Last Name', 'text'],
+        ['email', 'Email', 'email']
+      ]
+    : [
+        ['teacher_id', 'Teacher ID', 'text'],
+        ['f_name', 'First Name', 'text'],
+        ['l_name', 'Last Name', 'text'],
+        ['mail_id', 'Email', 'email'],
+        ['qualification', 'Qualification', 'text'],
+        ['subject', 'Subject', 'text']
+      ]
+
+  document.getElementById('modalTitle').textContent = isStudent ? 'Add Student' : 'Add Lecturer'
+  document.getElementById('modalSubtitle').textContent = isStudent ? 'Enter student details and save directly into MySQL.' : 'Enter lecturer details and save directly into MySQL.'
+
+  document.getElementById('addForm').innerHTML = fields.map(([name, label, type]) => `
+    <div style="display:grid;gap:7px;">
+      <label style="font-size:13px;font-weight:900;color:#475569;">${label}</label>
+      <input name="${name}" type="${type}" ${['reg_no','f_name','l_name','email','teacher_id','mail_id'].includes(name) ? 'required' : ''} style="padding:14px 15px;border-radius:16px;border:1px solid #cbd5e1;outline:none;font-size:14px;">
+    </div>
+  `).join('')
+
+  document.getElementById('modalBackdrop').style.display='flex'
+}
+
+function closeAddModal(){
+  document.getElementById('modalBackdrop').style.display='none'
+  document.getElementById('addForm').innerHTML = ''
+}
+
+function submitAddForm(){
+  const form = document.getElementById('addForm')
+  if (!form.reportValidity()) return
+
+  const payload = Object.fromEntries(new FormData(form).entries())
+
+  fetch(api + tableConfigs[currentType].endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Insert failed')
+    return response.json()
+  })
+  .then(() => {
+    closeAddModal()
+    loadTable(currentType, document.querySelector(`.tabs button:nth-child(${currentType === 'students' ? 1 : 2})`), false)
+    loadDashboardCounts()
+    alert('Record added successfully ✅')
+  })
+  .catch(() => alert('Unable to add record. Check duplicate ID or required database fields.'))
+}
+    const tableConfigs = {
+      students: { endpoint: '/students', columns: [['reg_no', 'Reg No'], ['f_name', 'First Name'], ['l_name', 'Last Name'], ['email', 'Email'], ['dept', 'Dept'], ['section', 'Section']] },
+      lecturers: { endpoint: '/lecturers', columns: [['teacher_id', 'Teacher ID'], ['f_name', 'First Name'], ['l_name', 'Last Name'], ['mail_id', 'Email'], ['qualification', 'Qualification'], ['subject', 'Subject']] },
+      lectures: { endpoint: '/lectures', columns: [['lecture_id', 'Lecture ID'], ['title', 'Title'], ['subject', 'Subject'], ['date', 'Date'], ['time', 'Time'], ['room_no', 'Room'], ['teacher_id', 'Teacher ID']] },
+      attendance: { endpoint: '/attendance', columns: [['reg_no', 'Reg No'], ['lecture_id', 'Lecture ID'], ['status', 'Status'], ['marked_time', 'Marked Time'], ['remarks', 'Remarks']] },
+      hostel: { endpoint: '/hostel', columns: [['reg_no', 'Reg No'], ['hostel_name', 'Hostel'], ['block', 'Block'], ['room_no', 'Room'], ['floor', 'Floor']] }
+    }
+    function setActiveButton(activeButton) { document.querySelectorAll('.tabs button').forEach(button => button.classList.remove('active')); if (activeButton) activeButton.classList.add('active') }
+    function formatValue(key, value) { if (value === null || value === undefined || value === '') return '-'; if (key === 'status') { const statusClass = String(value).toLowerCase(); return `<span class="pill ${statusClass}">${value}</span>` } if (key === 'date') return new Date(value).toLocaleDateString(); if (key === 'marked_time') return new Date(value).toLocaleString(); return value }
+    function renderTable() { const searchValue = document.getElementById('search').value.toLowerCase(); const filteredData = currentData.filter(row => Object.values(row).join(' ').toLowerCase().includes(searchValue)); document.getElementById('recordCount').textContent = `Showing ${filteredData.length} records`; document.getElementById('tableHead').innerHTML = `<tr>${currentColumns.map(column => `<th>${column[1]}</th>`).join('')}</tr>`; if (filteredData.length === 0) { document.getElementById('tableBody').innerHTML = `<tr><td class="empty" colspan="${currentColumns.length}">No data found</td></tr>`; return } document.getElementById('tableBody').innerHTML = filteredData.map(row => `<tr>${currentColumns.map(column => `<td>${formatValue(column[0], row[column[0]])}</td>`).join('')}</tr>`).join('') }
+    function loadTable(type, button, shouldScroll = true) { currentType = type; setActiveButton(button); const addButton = document.getElementById('addButton'); if (addButton) { addButton.style.display = type === 'students' || type === 'lecturers' ? 'inline-flex' : 'none'; addButton.textContent = type === 'students' ? '+ Add Student' : type === 'lecturers' ? '+ Add Lecturer' : '+ Add'; } document.getElementById('sectionTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1); document.getElementById('recordCount').textContent = 'Loading records...'; document.getElementById('search').value = ''; const config = tableConfigs[type]; currentColumns = config.columns; if (shouldScroll) document.getElementById('dataPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('tableBody').innerHTML = '<tr><td class="loading" colspan="8">Loading data from database...</td></tr>'; fetch(api + config.endpoint).then(response => response.json()).then(data => { currentData = data; renderTable() }).catch(() => { document.getElementById('recordCount').textContent = 'Unable to load records'; document.getElementById('tableBody').innerHTML = '<tr><td class="empty" colspan="8">Unable to load this section. Make sure backend is running on port 8000.</td></tr>' }) }
+    function exportCSV() { if (!currentData.length) return; const headers = currentColumns.map(column => column[1]); const rows = currentData.map(row => currentColumns.map(column => `"${String(row[column[0]] ?? '').replace(/"/g, '""')}"`).join(',')); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `${currentType}_data.csv`; link.click(); URL.revokeObjectURL(url) }
+    function safeCount(endpoint, elementId) { fetch(api + endpoint).then(res => res.json()).then(data => { document.getElementById(elementId).textContent = Array.isArray(data) ? data.length : 0 }).catch(() => { document.getElementById(elementId).textContent = '—' }) }
+    function loadDashboardCounts() { safeCount('/students', 'studentCount'); safeCount('/lecturers', 'lecturerCount'); safeCount('/lectures', 'lectureCount'); safeCount('/attendance', 'attendanceCount') }
+    loadTable('students', document.querySelector('.tabs button'), false)
+    loadDashboardCounts()
+  </script>
+</body>
+</html>
